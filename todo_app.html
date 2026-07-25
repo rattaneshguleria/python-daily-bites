@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Bites — Tasks</title>
+<style>
+  :root{
+    --ink: #12181A;
+    --panel: #17201F;
+    --panel-border: #253130;
+    --text: #EDECE6;
+    --text-dim: #93A19C;
+    --sage: #8FB39C;
+    --amber: #E0A458;
+    --danger: #C97B63;
+    --radius: 10px;
+    --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+    --font-body: 'Inter', 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(143,179,156,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(224,164,88,0.05), transparent 45%);
+    color: var(--text);
+    font-family: var(--font-body);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding: 56px 20px;
+  }
+
+  .app{
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  h1{
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0 0 22px 0;
+    letter-spacing: -0.01em;
+  }
+
+  .progress-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 22px;
+  }
+
+  .progress-track{
+    flex:1;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--panel-border);
+    overflow:hidden;
+  }
+
+  .progress-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--sage), #B7D0BE);
+    width:0%;
+    transition: width 0.35s ease;
+    border-radius: 999px;
+  }
+
+  .progress-label{
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space:nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .composer{
+    display:flex;
+    gap:8px;
+    margin-bottom: 20px;
+  }
+
+  .composer input{
+    flex:1;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 13px 14px;
+    font-size: 14px;
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .composer input::placeholder{ color: var(--text-dim); }
+
+  .composer input:focus{
+    border-color: var(--sage);
+  }
+
+  .composer button{
+    background: var(--sage);
+    color: var(--ink);
+    border: none;
+    border-radius: var(--radius);
+    padding: 0 20px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14px;
+    cursor:pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+
+  .composer button:hover{ background: #A2C4AD; }
+  .composer button:active{ transform: scale(0.96); }
+
+  .filters{
+    display:flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .filters button{
+    background: transparent;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor:pointer;
+    transition: all 0.15s ease;
+  }
+
+  .filters button.active{
+    color: var(--ink);
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+
+  .list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+  }
+
+  .task{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 13px 14px;
+    animation: rise 0.25s ease;
+  }
+
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(4px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .check{
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--text-dim);
+    flex-shrink:0;
+    cursor:pointer;
+    position:relative;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .check svg{
+    position:absolute;
+    inset:0;
+    margin:auto;
+    width: 12px;
+    height: 12px;
+    stroke: var(--ink);
+    stroke-width: 3;
+    fill:none;
+    stroke-dasharray: 20;
+    stroke-dashoffset: 20;
+    transition: stroke-dashoffset 0.25s ease;
+  }
+
+  .task.done .check{
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+
+  .task.done .check svg{ stroke-dashoffset: 0; }
+
+  .task-text{
+    flex:1;
+    font-size: 14px;
+    line-height:1.4;
+    word-break: break-word;
+    transition: color 0.15s ease;
+  }
+
+  .task.done .task-text{
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: var(--panel-border);
+  }
+
+  .delete{
+    background:transparent;
+    border:none;
+    color: var(--text-dim);
+    cursor:pointer;
+    font-size: 16px;
+    line-height:1;
+    padding: 4px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .task:hover .delete{ opacity: 1; }
+  .delete:hover{ color: var(--danger); background: rgba(201,123,99,0.1); }
+
+  .empty{
+    text-align:center;
+    padding: 48px 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  .empty-mark{
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display:block;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="eyebrow">Day 01 · Daily Bites</div>
+  <h1>Today's tasks</h1>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <form class="composer" id="composer">
+    <input type="text" id="taskInput" placeholder="Add a task and press Enter…" autocomplete="off">
+    <button type="submit">Add</button>
+  </form>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="active">Active</button>
+    <button class="filter-btn" data-filter="done">Done</button>
+  </div>
+
+  <ul class="list" id="list"></ul>
+</div>
+
+<script>
+  let tasks = [
+    { id: 1, text: "Push Day 1 to GitHub", done: true },
+    { id: 2, text: "Sketch Day 2 idea", done: false }
+  ];
+  let filter = 'all';
+  let nextId = 3;
+
+  const list = document.getElementById('list');
+  const composer = document.getElementById('composer');
+  const input = document.getElementById('taskInput');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+
+  function render(){
+    const filtered = tasks.filter(t =>
+      filter === 'all' ? true : filter === 'done' ? t.done : !t.done
+    );
+
+    list.innerHTML = '';
+
+    if(filtered.length === 0){
+      const empty = document.createElement('li');
+      empty.className = 'empty';
+      empty.innerHTML = `<span class="empty-mark">Nothing here</span>${
+        filter === 'done' ? 'No tasks finished yet.' :
+        filter === 'active' ? 'Everything is done. Nice.' :
+        'Add your first task above.'
+      }`;
+      list.appendChild(empty);
+    } else {
+      filtered.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'task' + (t.done ? ' done' : '');
+        li.innerHTML = `
+          <div class="check" data-id="${t.id}">
+            <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+          </div>
+          <div class="task-text">${escapeHtml(t.text)}</div>
+          <button class="delete" data-id="${t.id}" aria-label="Delete task">✕</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    const doneCount = tasks.filter(t => t.done).length;
+    const total = tasks.length;
+    progressFill.style.width = total ? `${(doneCount/total)*100}%` : '0%';
+    progressLabel.textContent = `${doneCount} / ${total}`;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  composer.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const val = input.value.trim();
+    if(!val) return;
+    tasks.push({ id: nextId++, text: val, done: false });
+    input.value = '';
+    render();
+  });
+
+  list.addEventListener('click', (e) => {
+    const check = e.target.closest('.check');
+    const del = e.target.closest('.delete');
+    if(check){
+      const id = Number(check.dataset.id);
+      const t = tasks.find(t => t.id === id);
+      if(t) t.done = !t.done;
+      render();
+    }
+    if(del){
+      const id = Number(del.dataset.id);
+      tasks = tasks.filter(t => t.id !== id);
+      render();
+    }
+  });
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  render();
+</script>
+
+</body>
+</html>
